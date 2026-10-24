@@ -11,6 +11,7 @@ module dense_agu #(
     input logic [12:0] out_size,
     input logic [15:0] w_base,
     input logic [6:0] b_base,
+    input logic enable,
     output logic [12:0] act_raddr,
     output logic [15:0] w_addr,
     output logic [6:0] b_addr,
@@ -48,7 +49,7 @@ module dense_agu #(
             done <= (in_size == 0 || out_size == 0);
             in_last <= in_size - 13'd1;
             grp_last <= 13'(((int'(out_size) + LANES - 1) >> LG) - 1);
-        end else if (running) begin
+        end else if (running&&enable) begin
             w_addr <= w_addr + 16'd1;
             if (i == in_last) begin
                 i <= '0;
@@ -63,7 +64,7 @@ module dense_agu #(
     assign act_raddr = i;
     assign out_idx = g << LG;
     assign b_addr = b_base_r + g[6:0];
-    assign valid = running;
-    assign first = running && (i == 0);
-    assign last = running && (i == in_last);
+    assign valid = running && enable;
+    assign first = valid && (i == 0);
+    assign last = valid && (i == in_last);
 endmodule
